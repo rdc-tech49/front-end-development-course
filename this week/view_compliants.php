@@ -58,9 +58,13 @@ $total_pages = ceil($total_complaints / $limit);
     <title>My Complaints</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body class="container mt-4">
+<body >
+<?php
+include "header.php";
+?>
 
-    <h2 class="mb-4">My Complaints</h2>
+<div class="container mt-5 pt-5">
+    <h2 class="mb-4 mt-5">My Complaints</h2>
 
     <!-- Search Form -->
     <form method="GET" action="" class="mb-3">
@@ -144,7 +148,7 @@ $total_pages = ceil($total_complaints / $limit);
     <?php else: ?>
         <div class="alert alert-warning">No complaints found.</div>
     <?php endif; ?>
-
+    </div>
 </body>
 </html>
 

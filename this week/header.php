@@ -3,7 +3,7 @@
 $isuser = isset($_SESSION['email']) && !empty($_SESSION['email']);
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top mb-5">
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center" href="index.php">
       <img src="./images/p_logo.png" alt="Logo" width="80" height="80" class="d-inline-block align-text-top">
