@@ -85,7 +85,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Execute the query
                 if ($conn->query($sql) === TRUE) {
-                echo "New complaint has been submitted successfully.";
+                    $complaint_submit_status = "New complaint has been submitted successfully";
+                    header("Location: user_dashboard.php?complaint_submit_status= $complaint_submit_status");
+                // echo "New complaint has been submitted successfully.";
                 } else {
                 echo "Error: " . $sql . "<br>" . $conn->error;
                 }

@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php"); // Redirect if not logged in
+    exit();
+}
+?>
+
 <!-- filepath: c:\xampp\htdocs\police_training\police_training\user_dashboard.php -->
 <!DOCTYPE html>
 <html lang="en">
@@ -22,11 +30,6 @@
 <body>
 
 <?php
-session_start();
-if (!isset($_SESSION['email'])) {
-    header("Location: login.php");
-    exit();
-}
 include 'header.php';
 include 'config.php';
 ?>

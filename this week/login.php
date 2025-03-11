@@ -14,9 +14,9 @@ if (isset($_COOKIE["remember_me"])) {
 
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
-        	$_SESSION['user_id'] = $user['user_id'];
-          $_SESSION['user_name'] = $user['name'];
-          $_SESSION['email'] = $user['email'];
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['user_name'] = $user['name'];
+        $_SESSION['email'] = $user['email'];
         header("Location: user_dashboard.php"); // Redirect if already logged in
         exit();
     }
