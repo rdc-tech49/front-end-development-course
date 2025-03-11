@@ -1,10 +1,10 @@
 <?php
-include 'config.php';
 session_start();
- // Include your database connection file
+include 'config.php'; // Include your database connection file
+include 'functions.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $email = $_POST['email1'];
+    $email = $_POST['email'];
     $password = $_POST['password'];
 
     // Create a prepared statement to prevent SQL injection
@@ -14,10 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-     
         $user = $result->fetch_assoc();
-     
-       
         // Compare the plain text passwords directly
         if ($password == $user['password']) {
             // Password is correct, set session variables and redirect to user_dashboard.php
@@ -25,14 +22,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['email'] = $user['email'];
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['user_name'] = $user['user_name'];
+
+            $username = $user['user_name'];
            
             // echo $_SESSION['user_id'];
-            echo $_SESSION['user_name'];
-            echo $_SESSION['email'];
-            
+            // echo $_SESSION['user_name'];
+            // echo $_SESSION['email'];
+
+            loginMailSend($email,$username);
+          
 
             header("Location: user_dashboard.php");
-           
+            exit();
         } else {
             // Password is incorrect, redirect back to login with error message
             header("Location: login.php?error=Invalid email or password");

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Dashboard - RDC - Tech</title>
+  <title>User Dashboard - TN-Police</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/index.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -22,11 +22,11 @@
 <body>
 
 <?php
-//session_start();
-// if (!isset($_SESSION['username'])) {
-//     //header("Location: login.php");
-//     exit();
-// }
+session_start();
+if (!isset($_SESSION['email'])) {
+    header("Location: login.php");
+    exit();
+}
 include "header.php";
 ?>
 
@@ -61,46 +61,43 @@ include "header.php";
     <a href="new_compliant.php" class="btn btn-primary  w-100">
        <i class="bi bi-file-earmark-plus-fill" style="font-size: 4rem; "></i>
        <br>
-        <!-- <div class="card-body"> -->
-             New Complient
+       
+             New Compliant
     </a>
-       <!-- </div> -->
     </div>
 
     <div class="card align-items-center m-2 d-inline-block" style="width: 18rem;">
-    <a href="#" class="btn btn-primary  w-100">
+    <a href="view_compliants.php" class="btn btn-primary  w-100">
        <i class="bi bi-eye" style="font-size: 4rem; "></i>
        <br>
-       <!-- <div class="card-body"> -->
-        View Complient
+       
+        View Compliant
     </a>
-      <!-- </div> -->
+      
     </div>
 
-
-
-   
-    
+     
    
 </div>
 
-
+<div style="margin-top: 10%;">
+<?php
+  include 'footer.php';
+  ?>
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-<!-- <script>
+<script>
   $(document).ready(function() {
     // Hide the element with id 'login_btn'
     $('#login_btn').hide();
     $('#signup_btn').hide();
     
 });
-  </script> -->
+  </script>
 
 </body>
-<?php
-  include 'footer.php';
-  ?>
 </html>

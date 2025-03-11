@@ -27,7 +27,7 @@
       <form action="signup_process.php" method="POST" class="p-4 shadow">
         <div class="mb-3">
           <label for="username" class="form-label">Username</label>
-          <input type="text" class="form-control" id="username" name="username" required>
+          <input type="text" class="form-control" id="username" name="username" >
         </div>
         <div class="mb-3">
           <label for="email" class="form-label">Email address</label>

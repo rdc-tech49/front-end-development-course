@@ -22,11 +22,11 @@
 <body>
 
 <?php
-//session_start();
-// if (!isset($_SESSION['username'])) {
-//     //header("Location: login.php");
-//     exit();
-// }
+session_start();
+if (!isset($_SESSION['email'])) {
+    header("Location: login.php");
+    exit();
+}
 include "header.php";
 ?>
 
@@ -61,30 +61,30 @@ include "header.php";
     <a href="new_compliant.php" class="btn btn-primary  w-100">
        <i class="bi bi-file-earmark-plus-fill" style="font-size: 4rem; "></i>
        <br>
-        <!-- <div class="card-body"> -->
-             New Complien
+       
+             New Compliant
     </a>
-       <!-- </div> -->
     </div>
 
     <div class="card align-items-center m-2 d-inline-block" style="width: 18rem;">
-    <a href="#" class="btn btn-primary  w-100">
+    <a href="view_compliants.php" class="btn btn-primary  w-100">
        <i class="bi bi-eye" style="font-size: 4rem; "></i>
        <br>
-       <!-- <div class="card-body"> -->
-        View Complient
+       
+        View Compliant
     </a>
-      <!-- </div> -->
+      
     </div>
 
-
-
-   
-    
+     
    
 </div>
 
-
+<div style="margin-top: 10%;">
+<?php
+  include 'footer.php';
+  ?>
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -100,7 +100,4 @@ include "header.php";
   </script>
 
 </body>
-<?php
-  include 'footer.php';
-  ?>
 </html>

@@ -3,7 +3,7 @@
 include 'config.php';
 include 'functions.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+//if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $password = $_POST['password'];
@@ -11,8 +11,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $dob = $_POST['dob'];
     $gender = $_POST['gender'];
 
+    //    $username = "name1";
+    // $email = "harishankar@nielitchennai.edu.in";
+    // $password = 123;
+    // $confirm_password = 123;
+    // $dob = "2025-03-10";
+    // $gender = "male";
+
+
+
     // Check if any of the required fields are empty
-    if ($username != "" && $email != "" && $password !="" && $confirm_password !="" && $dob !="" && $gender !="") {     
+    if ($username != "" && $email != "" && $password !="" && $confirm_password !="" && $dob !="" && $gender !="") {
+        
         
         // Check if the password and confirm password match
         if ($password !== $confirm_password) {
@@ -56,8 +66,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         
          //echo "All fields are required!";
-         $response_msg = "All fields are required";
-         header("Location: signup.php?signup_status=$response_msg");
+         //$response_msg = "All fields are required";
+         header("Location: signup.php?signup_status=All fields are required");
             
 
 
@@ -70,5 +80,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
-}
+//}
 ?>

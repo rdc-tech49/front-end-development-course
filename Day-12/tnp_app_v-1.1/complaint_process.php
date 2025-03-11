@@ -42,21 +42,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo $_SESSION['user_name'];
         echo $_SESSION['email'];
       
+   
 
-        // File upload handling
-        $file_name = basename($file_upload["name"]);
-        //$file_name =  "$user_id" . "_" . "$user_name" . "_" ."$currentDateTime";
+    // Extract original file name and file extension
+    $original_file_name = basename($file_upload["name"]);
+    $file_extension = pathinfo($original_file_name, PATHINFO_EXTENSION);
+    
+  
+    $currentDateTime = date('Y-m-d_H-i-s'); // Get the current timestamp (e.g., 2025-03-10_123456)
+    $random_number = date('YmdHis');
+    
+    // Generate a new compliant number
+    $sliced_nuser_name = substr($user_name, 0, 3);
+    $uc_user_name = strtoupper($sliced_nuser_name);
+    $compliant_number  = $uc_user_name.$user_id."-".$random_number;
+    
+    // Create the new file name (including the extension)
+    // $new_file_name = $user_id . "_" . $user_name . "_" . $currentDateTime . "." . $file_extension;
 
-        $target_dir = "uploads/compliants/"; // specify the folder to upload files
-        $target_file = $target_dir . $file_name;
-        
-        // Move the uploaded file to the target directory
-        if (move_uploaded_file($file_upload["tmp_name"], $target_file)) {
+    $new_file_name = $compliant_number ."." . $file_extension;
+
+
+    // Specify the target directory where the file will be uploaded
+    $target_dir = "uploads/compliants/";
+
+    // Full path to the target file (including renamed file name)
+    $target_file_path = $target_dir . $new_file_name;
+
+    // echo $file_upload["tmp_name"];
+    
+    // print_r($file_upload);
+    // exit();
+
+    // Check if the file is uploaded and move it to the target directory
+    if (move_uploaded_file($file_upload["tmp_name"], $target_file_path)) {
 
 
                 // Prepare the SQL query to insert data into the `user_complients` table
-                $sql = "INSERT INTO user_complients (complaint_title, mobile_number, address, complaint_message, file_upload)
-                VALUES ('$complaint_title', '$mobile_number', '$address', '$complaint_message', '$file_name')";
+                $sql = "INSERT INTO user_complients (user_id,compliant_number,complaint_title, mobile_number, address, complaint_message, file_upload)
+                VALUES ('$user_id','$compliant_number','$complaint_title', '$mobile_number', '$address', '$complaint_message', '$target_file_path')";
 
                 // Execute the query
                 if ($conn->query($sql) === TRUE) {

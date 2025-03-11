@@ -1,4 +1,3 @@
-<!-- filepath: c:\xampp\htdocs\police_training\police_training\user_dashboard.php -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,15 +15,11 @@
     }
   </style>
 
-
-
-
-
 </head>
 <body>
 
 <?php
-//session_start();
+// session_start();
 // if (!isset($_SESSION['username'])) {
 //     //header("Location: login.php");
 //     exit();
@@ -81,7 +76,11 @@ include "header.php";
 </div>
 
 
-
+<div style="margin-top: 30%;">
+<?php
+  include 'footer.php';
+  ?>
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -97,7 +96,4 @@ include "header.php";
   </script>
 
 </body>
-<?php
-  include 'footer.php';
-  ?>
 </html>

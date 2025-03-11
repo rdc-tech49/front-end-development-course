@@ -19,8 +19,8 @@
 
   <section id="home" class="home-banner">
   <div class="content">
-    <h1>Welcome to Tamilnadu Police Technical z</h1>
-    <p>Discover more about us, our services, and how we can help you achieve your goals.</p>
+    <h1>Welcome to Tamilnadu Police Technical Wings</h1>
+    <p>Discover more about us, our services, and how we can help you.</p>
   </div>
   </section>
 

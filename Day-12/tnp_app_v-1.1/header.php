@@ -1,4 +1,3 @@
-<!-- filepath: c:\xampp\htdocs\police_training\police_training\header.php -->
 <?php
 session_start();
 // $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'];
@@ -30,7 +29,6 @@ $isuser = isset($_SESSION['email']) ;
         </li>
       </ul>
       <ul class="navbar-nav ms-auto">
-        
         <?php if ($isuser): ?>
           <li class="nav-item">
            <h4> <?php  echo "<h4>". $_SESSION['user_name']. "</h4>"?></h4>
