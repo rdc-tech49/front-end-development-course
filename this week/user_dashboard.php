@@ -77,15 +77,13 @@ include "header.php";
     </a>
       
     </div>
-    <!-- alert for succesfull sign up  -->
-    <?php 
-								if (isset($_GET["complaint_submit_status"])) {  // Check if 'signup_status' exists in the URL
-									$response_msg = htmlspecialchars($_GET["complaint_submit_status"], ENT_QUOTES, 'UTF-8');
-									echo '<div id="successMessage" class="alert alert-success text-center">';
-									echo $response_msg;
-									echo '</div>';
-								}
-							?>
+
+
+    <?php
+    if (isset($_GET['complaint_submit_status'])) {
+        echo "<div class=' text-center alert alert-success' id='successMessage'>" . htmlspecialchars($_GET['complaint_submit_status']) . "</div>";
+    }
+    ?>
 
      
    
@@ -111,7 +109,7 @@ include "header.php";
 			messageDiv.style.transition = "opacity 0.5s ease";
 			messageDiv.style.opacity = "0";
 			setTimeout(() => messageDiv.remove(), 500);
-    }}, 5000);
+    }}, 10000);
     </script>
 
 </body>

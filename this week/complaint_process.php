@@ -5,6 +5,12 @@ include 'database_config.php';
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // Check if user is logged in
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: login.php?error=Please log in first.");
+        exit();
+    }
     // Retrieve form data
     $complaint_title = $_POST['complaint_title'];
     $mobile_number = $_POST['mobile_number'];
@@ -13,106 +19,72 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $file_upload = $_FILES['file_upload'];
   
 
-    // Set the maximum allowed file size (in bytes)
-    $maxFileSize = 10 * 1024 * 1024;  // 10 MB
+    // Set allowed file types and max file size (10MB)
+    $allowed_extensions = ['jpg', 'jpeg', 'png', 'pdf'];
+    $maxFileSize = 10 * 1024 * 1024;
 
-    // Check if a file was uploaded
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        // File upload data
-        $file_upload = $_FILES['file_upload'];
-    
-        // Check if there was an error uploading the file
-        if ($file_upload['error'] != UPLOAD_ERR_OK) {
-            echo "Error: " . $file_upload['error'];
-            exit;
-        }
-   
-        // Check if the file size exceeds the limit
-        if ($file_upload['size'] > $maxFileSize) {
-            echo "Error: The file is too large. Maximum file size is 10 MB.";
-            exit;
-        }
+    if ($file_upload['error'] !== UPLOAD_ERR_OK) {
+        header("Location: new_complaint.php?error=File upload error.");
+        exit();
+    }
 
-        // find user
-        $user_id = $_SESSION['user_id'];
-        $user_name = $_SESSION['user_name'];
-        $currentDateTime = date("Y-m-d H:i:s");
+    // Validate file type
+    $file_extension = strtolower(pathinfo($file_upload["name"], PATHINFO_EXTENSION));
+    if (!in_array($file_extension, $allowed_extensions)) {
+        header("Location: new_complaint.php?error=Invalid file type. Only JPG, PNG, and PDF allowed.");
+        exit();
+    }
 
-        echo $_SESSION['user_id'];
-        echo $_SESSION['user_name'];
-        echo $_SESSION['email'];
-      
-        
+    // Validate file size
+    if ($file_upload['size'] > $maxFileSize) {
+        header("Location: new_complaint.php?error=File too large. Max size is 10MB.");
+        exit();
+    }
 
-    // Extract original file name and file extension
-    $original_file_name = basename($file_upload["name"]);
-    $file_extension = pathinfo($original_file_name, PATHINFO_EXTENSION);
-    
-  
-    $currentDateTime = date('Y-m-d_H-i-s'); // Get the current timestamp (e.g., 2025-03-10_123456)
+    // Retrieve logged-in user info
+    $user_id = $_SESSION['user_id'];
+    $user_name = $_SESSION['user_name'];
+    $currentDateTime = date("Y-m-d H:i:s");        
+
+    // Generate a unique complaint number
     $random_number = date('YmdHis');
-    
-    // Generate a new compliant number
-    $sliced_nuser_name = substr($user_name, 0, 3);
-    $uc_user_name = strtoupper($sliced_nuser_name);
-    $compliant_number  = $uc_user_name.$user_id."-".$random_number;
-    
-    // Create the new file name (including the extension)
-    // $new_file_name = $user_id . "_" . $user_name . "_" . $currentDateTime . "." . $file_extension;
+    $sliced_nuser_name = strtoupper(substr($user_name, 0, 3));
+    $complaint_number = $sliced_nuser_name . $user_id . "-" . $random_number;
 
-    $new_file_name = $compliant_number ."." . $file_extension;
-
-
-    // Specify the target directory where the file will be uploaded
-    $target_dir = "uploads/compliants/";
-
-    // Full path to the target file (including renamed file name)
+    // Securely rename file
+    $new_file_name = $complaint_number . "." . $file_extension;
+    $target_dir = "uploads/complaints/";
     $target_file_path = $target_dir . $new_file_name;
 
-    // echo $file_upload["tmp_name"];
-    
-    // print_r($file_upload);
-    // exit();
+    // Ensure the uploads directory exists
+    if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
 
-
-    // Check if the file is uploaded and move it to the target directory
-    if (move_uploaded_file($file_upload["tmp_name"], $target_file_path)) {
-
-
-                // Prepare the SQL query to insert data into the `user_complients` table
-                $sql = "INSERT INTO user_complaints (user_id,complaint_number,complaint_title, mobile_number, address, complaint_message, file_upload)
-                VALUES ('$user_id','$compliant_number','$complaint_title', '$mobile_number', '$address', '$complaint_message', '$target_file_path')";
-
-                // Execute the query
-                if ($conn->query($sql) === TRUE) {
-                    $complaint_submit_status = "New complaint has been submitted successfully";
-                    header("Location: user_dashboard.php?complaint_submit_status= $complaint_submit_status");
-                // echo "New complaint has been submitted successfully.";
-                } else {
-                echo "Error: " . $sql . "<br>" . $conn->error;
-                }
-
-// Close the connection
-$conn->close();
-
-
-
-
-
-
-
-
-            echo "The file has been uploaded successfully.";
-        } else {
-            echo "Sorry, there was an error uploading your file.";
-        }
+    // Move uploaded file to server directory
+    if (!move_uploaded_file($file_upload["tmp_name"], $target_file_path)) {
+        header("Location: new_complaint.php?error=Failed to upload file.");
+        exit();
     }
 
 
+    // Insert complaint into database using prepared statement
 
+    $sql = "INSERT INTO user_complaints (user_id, complaint_number, complaint_title, mobile_number, address, complaint_message, file_upload, complaint_date) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
 
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("issssss", $user_id, $complaint_number, $complaint_title, $mobile_number, $address, $complaint_message, $target_file_path);
 
+    if ($stmt->execute()) {
+        header("Location: user_dashboard.php?complaint_submit_status=" . urlencode("New complaint has been submitted successfully. Your complaint number is $complaint_number"));
+        exit();
+    } else {
+        header("Location: new_complaint.php?error=Database error. Try again.");
+        exit();
+    }
 
+    $stmt->close();
+    $conn->close();
 }
-
 ?>

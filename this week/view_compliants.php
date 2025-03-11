@@ -1,134 +1,155 @@
 <?php
 session_start();
+include 'database_config.php'; // Database connection
+
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php"); // Redirect if not logged in
+    header("Location: login.php?error=Please log in first.");
     exit();
 }
+
+$user_id = $_SESSION['user_id']; // Get logged-in user's ID
+
+// Pagination setup
+$limit = 10; // Complaints per page
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$offset = ($page - 1) * $limit;
+
+// Sorting
+$sort_column = isset($_GET['sort']) ? $_GET['sort'] : 'complaint_date';
+$sort_order = (isset($_GET['order']) && $_GET['order'] == 'asc') ? 'ASC' : 'DESC';
+$next_order = ($sort_order == 'ASC') ? 'desc' : 'asc';
+
+// Search filter
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+// SQL query with search, sorting, and pagination
+$sql = "SELECT complaint_number, complaint_title, mobile_number, address, complaint_message, file_upload, complaint_date, respond_msg, respond_date, respond_status 
+        FROM user_complaints 
+        WHERE user_id = ? AND 
+              (complaint_number LIKE ? OR complaint_title LIKE ? OR respond_status LIKE ?)
+        ORDER BY $sort_column $sort_order
+        LIMIT ?, ?";
+
+$stmt = $conn->prepare($sql);
+$searchTerm = "%$search%";
+$stmt->bind_param("isssii", $user_id, $searchTerm, $searchTerm, $searchTerm, $offset, $limit);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Get total number of complaints for pagination
+$count_sql = "SELECT COUNT(*) AS total FROM user_complaints 
+              WHERE user_id = ? AND 
+                    (complaint_number LIKE ? OR complaint_title LIKE ? OR respond_status LIKE ?)";
+$count_stmt = $conn->prepare($count_sql);
+$count_stmt->bind_param("isss", $user_id, $searchTerm, $searchTerm, $searchTerm);
+$count_stmt->execute();
+$count_result = $count_stmt->get_result();
+$total_complaints = $count_result->fetch_assoc()['total'];
+
+$total_pages = ceil($total_complaints / $limit);
 ?>
 
-<!-- filepath: c:\xampp\htdocs\police_training\police_training\user_dashboard.php -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Dashboard - TN-Police</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/index.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-
-  <style>
-    body {
-      padding-top: 100px; /* Adjust this value based on the height of your header */
-    }
-  </style>
-
-
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Complaints</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
+<body class="container mt-4">
 
-<?php
-include 'header.php';
-include 'config.php';
-?>
+    <h2 class="mb-4">My Complaints</h2>
 
+    <!-- Search Form -->
+    <form method="GET" action="" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search complaints..." value="<?= htmlspecialchars($search) ?>">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </form>
 
-<br><br>
-<!-- container -->
-<div class="container-fluid">
-  <div class="row">
-      <div class="col-12">
-
-
-    <?php 
-
-// SQL query to fetch all records from the `user_complients` table
-$sql = "SELECT * FROM user_complients WHERE user_id = " . $_SESSION['user_id'];
-$result = $conn->query($sql);
-
-// Check if there are any records
-if ($result->num_rows > 0) {
-    // Start the table structure
-    echo "<table  class='table table-bordered table-hover' border='1'>
-              <thead>
-            <tr>
-                <th>ID</th>
-                <th>Compliant Number</th>
-                <th>Complaint Title</th>
-                <th>Mobile Number</th>
-                <th>Address</th>
-                <th>Complaint Message</th>
-                <th>File Upload</th>
-                <th>Compliant Date</th>
-                <th>Respond Message</th>
-                <th>Respond Date</th>
-                <th>Respond Status</th>
-            </tr>
-              </thead>
-              ";
-   
-    // Output data of each row
-    $i=1;
-    while($row = $result->fetch_assoc()) {
-     
-        echo "
-        <tbody>
-        <tr>
-                <td>" . $i . "</td>
-           
-                <td>" . $row["compliant_number"] . "</td>
-                <td>" . $row["complaint_title"] . "</td>
-                <td>" . $row["mobile_number"] . "</td>
-                <td>" . $row["address"] . "</td>
-                <td>" . $row["complaint_message"] . "</td>
-                <td>" . $row["file_upload"] . "</td>
-                <td>" . $row["compliant_date"] . "</td>
-                <td>" . $row["respond_msg"] . "</td>
-                <td>" . $row["respond_date"] . "</td>
-                <td>" . $row["respond_status"] . "</td>
-              </tr>
-              </tbody>";
-
-              $i++;
-    }
-
-    // Close the table
-    echo "</table>";
-} else {
-    echo "0 results found.";
-}
-
-// Close connection
-$conn->close();
-
-?>
-   
-       </div>
-    </div>
-</div>
+    <!-- Export Buttons -->
+    <a href="export_complaints.php?format=pdf" class="btn btn-danger mb-3">Export as PDF</a>
+    <a href="export_complaints.php?format=csv" class="btn btn-success mb-3">Export as Excel</a>
 
 
-<div style="margin-top: 20%;">
-    
-<?php
-  include 'footer.php';
-  ?>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-<script>
-  $(document).ready(function() {
-    // Hide the element with id 'login_btn'
-    $('#login_btn').hide();
-    $('#signup_btn').hide();
-    
-});
-  </script>
+    <?php if ($result->num_rows > 0): ?>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th><a href="?search=<?= urlencode($search) ?>&sort=complaint_number&order=<?= $next_order ?>">Complaint No</a></th>
+                    <th><a href="?search=<?= urlencode($search) ?>&sort=complaint_title&order=<?= $next_order ?>">Title</a></th>
+                    <th>Mobile</th>
+                    <th>Address</th>
+                    <th>Message</th>
+                    <th>File</th>
+                    <th><a href="?search=<?= urlencode($search) ?>&sort=complaint_date&order=<?= $next_order ?>">Date</a></th>
+                    <th>Response</th>
+                    <th><a href="?search=<?= urlencode($search) ?>&sort=respond_status&order=<?= $next_order ?>">Status</a></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while ($row = $result->fetch_assoc()): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($row['complaint_number']) ?></td>
+                        <td><?= htmlspecialchars($row['complaint_title']) ?></td>
+                        <td><?= htmlspecialchars($row['mobile_number']) ?></td>
+                        <td><?= htmlspecialchars($row['address']) ?></td>
+                        <td><?= htmlspecialchars($row['complaint_message']) ?></td>
+                        <td>
+                            <?php if (!empty($row['file_upload'])): ?>
+                                <a href="<?= htmlspecialchars($row['file_upload']) ?>" target="_blank">View File</a>
+                            <?php else: ?>
+                                No File
+                            <?php endif; ?>
+                        </td>
+                        <td><?= date("d M Y, h:i A", strtotime($row['complaint_date'])) ?></td>
+                        <td><?= !empty($row['respond_msg']) ? htmlspecialchars($row['respond_msg']) : 'Pending' ?></td>
+                        <td>
+                            <span class="badge <?= ($row['respond_status'] == 'Resolved') ? 'bg-success' : 'bg-warning' ?>">
+                                <?= htmlspecialchars($row['respond_status'] ?: 'Pending') ?>
+                            </span>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <nav>
+            <ul class="pagination">
+                <?php if ($page > 1): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?search=<?= urlencode($search) ?>&sort=<?= $sort_column ?>&order=<?= $sort_order ?>&page=<?= $page - 1 ?>">Previous</a>
+                    </li>
+                <?php endif; ?>
+
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <li class="page-item <?= ($i == $page) ? 'active' : '' ?>">
+                        <a class="page-link" href="?search=<?= urlencode($search) ?>&sort=<?= $sort_column ?>&order=<?= $sort_order ?>&page=<?= $i ?>"><?= $i ?></a>
+                    </li>
+                <?php endfor; ?>
+
+                <?php if ($page < $total_pages): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="?search=<?= urlencode($search) ?>&sort=<?= $sort_column ?>&order=<?= $sort_order ?>&page=<?= $page + 1 ?>">Next</a>
+                    </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+
+    <?php else: ?>
+        <div class="alert alert-warning">No complaints found.</div>
+    <?php endif; ?>
 
 </body>
-
 </html>
+
+<?php
+$stmt->close();
+$count_stmt->close();
+$conn->close();
+?>
