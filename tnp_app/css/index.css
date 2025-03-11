@@ -1,0 +1,286 @@
+/* Basic reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Navigation Bar */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+  }
+  
+  nav .logo img {
+    height: 40px; /* Adjust logo size */
+  }
+  .navbar-brand {
+    font-family: 'Poppins', sans-serif;
+  }
+  .nav-links {
+    list-style: none;
+    display: flex;
+  }
+  
+  .nav-links li {
+    margin-left: 20px;
+  }
+  
+  .nav-links li a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    font-size: 16px;
+  }
+  
+  .nav-links li a:hover {
+    background-color: #575757;
+    border-radius: 5px;
+  }
+  
+  .contact-btn {
+    background-color: #007BFF;
+    color: white;
+  }
+  
+  .contact-btn:hover {
+    background-color: #0056b3;
+  }
+
+
+  /* Section Styling */
+section {
+    padding: 50px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  /* Home Banner */
+  .home-banner {
+    background-image: url('../images/p_banner.jpg'); /* Add the path to your image */
+    background-size: cover; /* Makes sure the image covers the entire section */
+    background-position: center center; /* Centers the image */
+    color: white; /* Makes the text color white so it stands out on a dark image */
+    padding: 150px 0; /* Adds more padding for the banner */
+  }
+  
+  .home-banner .content {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Optional: Adds a semi-transparent overlay for better text visibility */
+    padding: 30px;
+  }
+  
+  .home-banner h1 {
+    font-size: 50px;
+    margin-bottom: 20px;
+  }
+  
+  .home-banner p {
+    font-size: 20px;
+  }
+  
+  
+  /* Hamburger Menu for Mobile */
+  .hamburger {
+    display: none;
+    font-size: 30px;
+    cursor: pointer;
+    color: white;
+  }
+  
+  .nav-links.active {
+    display: block;
+  }
+  
+  .nav-links {
+    display: flex;
+  }
+  
+  .nav-links li {
+    margin-left: 20px;
+  }
+  
+  /* Section Styling */
+  section {
+    padding: 50px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  #home {
+    background-color: #f9f9f9;
+  }
+  
+  #about {
+    background-color: #f1f1f1;
+  }
+  
+  #services {
+    background-color: #e9e9e9;
+  }
+  
+  #contact {
+    background-color: #f4f4f4;
+  }
+  
+  /* Service Section */
+  .service-list {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+  
+  .service-item {
+    width: 200px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: white;
+  }
+  
+  .service-item h3 {
+    margin-bottom: 10px;
+  }
+  
+  .service-item p {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  form {
+    max-width: 500px;
+    margin: 20px auto;
+    text-align: left;
+  }
+  
+  label {
+    font-weight: bold;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  input[type="submit"] {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  input[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    nav {
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    .nav-links {
+      display: none;
+      width: 100%;
+    }
+  
+    .nav-links.active {
+      display: block;
+    }
+  
+    .nav-links li {
+      margin: 10px 0;
+    }
+  
+    .hamburger {
+      display: block;
+    }
+  
+    .logo img {
+      height: 30px; /* Adjust logo size for smaller screens */
+    }
+  
+    .service-list {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .service-item {
+      width: auto;
+      margin-bottom: 20px;
+    }
+  }
+
+  /* Footer Styling */
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    margin-top: 50px; /* Adds space before footer */
+  }
+  
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .footer-content p {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+  
+  .footer-links {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  
+  .footer-links li {
+    margin: 0;
+  }
+  
+  .footer-links li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  
+  .footer-links li a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Responsive Footer */
+  @media (max-width: 768px) {
+    .footer-links {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .footer-links li {
+      margin: 5px 0;
+    }
+  }
+  
+  /* nav items style */
+  .navbar-nav .nav-link {
+    transition: color 0.3s ease;
+  }
+  
+  .navbar-nav .nav-link:hover {
+    color: #007bff; /* Change this to your desired hover color */
+  }
+
+  
