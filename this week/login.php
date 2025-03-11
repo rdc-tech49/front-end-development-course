@@ -1,3 +1,30 @@
+<?php
+session_start();
+include "database_config.php"; // Database connection
+
+// Check if "Remember Me" cookie exists
+if (isset($_COOKIE["remember_me"])) {
+    $token = $_COOKIE["remember_me"];
+
+    // Verify the token from the database
+    $stmt = $conn->prepare("SELECT user_id, email FROM customer_info WHERE remember_token = ?");
+    $stmt->bind_param("s", $token);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 1) {
+        $user = $result->fetch_assoc();
+        	$_SESSION['user_id'] = $user['user_id'];
+          $_SESSION['user_name'] = $user['name'];
+          $_SESSION['email'] = $user['email'];
+        header("Location: user_dashboard.php"); // Redirect if already logged in
+        exit();
+    }
+}
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +32,7 @@
 	<meta name="author" content="Muhamad Nauval Azhar">
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<meta name="description" content="This is a login page template based on Bootstrap 5">
-	<title>Login Page</title>
+	<title>Login Page - RDC-Tech</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </head>
@@ -21,7 +48,7 @@
 							<!-- alert for succesfull sign up  -->
 							<?php 
 								if (isset($_GET["signup_status"])) {  // Check if 'signup_status' exists in the URL
-									$response_msg = $_GET["signup_status"];
+									$response_msg = htmlspecialchars($_GET["signup_status"], ENT_QUOTES, 'UTF-8');
 									echo '<div id="successMessage" class="alert alert-success text-center">';
 									echo $response_msg;
 									echo '</div>';
@@ -31,7 +58,7 @@
 							<!-- alert for invalid login  -->
 							<?php 
 							if (isset($_GET["error"])) {  // Check if 'signup_status' exists in the URL
-								$response_msg = $_GET["error"];
+								$response_msg = htmlspecialchars($_GET["error"], ENT_QUOTES, 'UTF-8');
 								echo '<div id="successMessage" class="alert alert-danger text-center">';
 								echo $response_msg;
 								echo '</div>';
@@ -92,12 +119,13 @@
 	<script src="js/login.js"></script>
 	<script>
         // Hide the message after 10 seconds
-        setTimeout(function () {
-            var messageDiv = document.getElementById("successMessage");
-            if (messageDiv) {
-                messageDiv.style.display = "none";
-            }
-        }, 5000);
+    setTimeout(function () {
+    let messageDiv = document.getElementById("successMessage");
+    if (messageDiv) {
+			messageDiv.style.transition = "opacity 0.5s ease";
+			messageDiv.style.opacity = "0";
+			setTimeout(() => messageDiv.remove(), 500);
+    }}, 5000);
     </script>
 </body>
 </html>
