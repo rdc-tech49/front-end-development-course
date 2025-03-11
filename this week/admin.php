@@ -1,84 +1,131 @@
-<!-- filepath: c:\xampp\htdocs\police_training\police_training\admin.php -->
+<?php
+session_start();
+include 'database_config.php'; // Your DB connection
+
+// Check if user is logged in and has admin role
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    // If not admin, send to user dashboard (or login)
+    header("Location: user_dashboard.php");
+    exit();
+}
+
+// Get total customers
+$queryCustomers = "SELECT COUNT(*) as total_customers FROM customer_info";
+$resultCustomers = $conn->query($queryCustomers);
+$rowCustomers = $resultCustomers->fetch_assoc();
+$total_customers = $rowCustomers['total_customers'];
+
+// Get total complaints
+$queryComplaints = "SELECT COUNT(*) as total_complaints FROM user_complaints";
+$resultComplaints = $conn->query($queryComplaints);
+$rowComplaints = $resultComplaints->fetch_assoc();
+$total_complaints = $rowComplaints['total_complaints'];
+
+// Retrieve all customers details
+$queryAllCustomers = "SELECT user_id, name, email, role FROM customer_info";
+$resultAllCustomers = $conn->query($queryAllCustomers);
+
+// Retrieve all complaints details
+$queryAllComplaints = "SELECT id, user_id, complaint_number, complaint_title, mobile_number, address, complaint_message, complaint_date, respond_status FROM user_complaints";
+$resultAllComplaints = $conn->query($queryAllComplaints);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - TN-Police</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/index.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <style>
-    body {
-      padding-top: 100px; /* Adjust this value based on the height of your header */
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <!-- Using Bootstrap 5 for styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
+<div class="container mt-4">
+    <h1>Admin Dashboard</h1>
 
-<?php
-// session_start();
-// $_SESSION['isAdmin'] = true; // Set this variable when the admin logs in
-include "header.php";
-// include "db_connection.php";
-
-$sql = "SELECT * FROM users";
-// $result = mysqli_query($conn, $sql);
-?>
-
-<div class="container mt-5">
-  <h2 class="text-center mb-4">Admin Dashboard</h2>
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="d-flex justify-content-between mb-4">
-        <button class="btn btn-primary" onclick="toggleUsersTable()">View All Registered Users</button>
-        <!-- Placeholder for the second button -->
-        <a href="#" class="btn btn-secondary">Second Button</a>
-      </div>
-      <div id="usersTable" style="display: none;">
-        <table class="table table-bordered">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Password</th>
-              <th>Confirm Password</th>
-              <th>Address</th>
-              <th>Date of Birth</th>
-              <th>Gender</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php while ($row = mysqli_fetch_assoc($result)): ?>
-              <tr>
-                <td><?php echo $row['username']; ?></td>
-                <td><?php echo $row['email']; ?></td>
-                <td><?php echo $row['password']; ?></td>
-                <td><?php echo $row['confirm_password']; ?></td>
-                <td><?php echo $row['address']; ?></td>
-                <td><?php echo $row['dob']; ?></td>
-                <td><?php echo $row['gender']; ?></td>
-              </tr>
-            <?php endwhile; ?>
-          </tbody>
-        </table>
-      </div>
+    <!-- Statistics Cards -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Customers Registered</div>
+                <div class="card-body">
+                    <h5 class="card-title"><?php echo $total_customers; ?></h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Total Complaints Registered</div>
+                <div class="card-body">
+                    <h5 class="card-title"><?php echo $total_complaints; ?></h5>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+
+    <!-- Customers Table -->
+    <h2>Customers Details</h2>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php while($customer = $resultAllCustomers->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo $customer['user_id']; ?></td>
+                <td><?php echo htmlspecialchars($customer['name']); ?></td>
+                <td><?php echo htmlspecialchars($customer['email']); ?></td>
+                <td><?php echo htmlspecialchars($customer['role']); ?></td>
+                <td>
+                    <a href="admin_edit_customer.php?id=<?php echo $customer['user_id']; ?>" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="admin_delete_customer.php?id=<?php echo $customer['user_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this customer?');">Delete</a>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+        </tbody>
+    </table>
+
+    <!-- Complaints Table -->
+    <h2>Complaints Details</h2>
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>User ID</th>
+                <th>Complaint Number</th>
+                <th>Title</th>
+                <th>Mobile</th>
+                <th>Address</th>
+                <th>Message</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php while($complaint = $resultAllComplaints->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo $complaint['id']; ?></td>
+                <td><?php echo $complaint['user_id']; ?></td>
+                <td><?php echo htmlspecialchars($complaint['complaint_number']); ?></td>
+                <td><?php echo htmlspecialchars($complaint['complaint_title']); ?></td>
+                <td><?php echo htmlspecialchars($complaint['mobile_number']); ?></td>
+                <td><?php echo htmlspecialchars($complaint['address']); ?></td>
+                <td><?php echo htmlspecialchars($complaint['complaint_message']); ?></td>
+                <td><?php echo date("d M Y, h:i A", strtotime($complaint['complaint_date'])); ?></td>
+                <td><?php echo htmlspecialchars($complaint['respond_status']); ?></td>
+                <td>
+                    <a href="admin_edit_complaint.php?id=<?php echo $complaint['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="admin_delete_complaint.php?id=<?php echo $complaint['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this complaint?');">Delete</a>
+                </td>
+            </tr>
+        <?php endwhile; ?>
+        </tbody>
+    </table>
 </div>
-
-<script>
-  function toggleUsersTable() {
-    var table = document.getElementById('usersTable');
-    if (table.style.display === 'none') {
-      table.style.display = 'block';
-    } else {
-      table.style.display = 'none';
-    }
-  }
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
 </body>
 </html>

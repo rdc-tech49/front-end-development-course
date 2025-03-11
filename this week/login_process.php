@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           $_SESSION['user_id'] = $user['user_id'];
           $_SESSION['user_name'] = $user['name'];
           $_SESSION['email'] = $user['email'];
+          $_SESSION['role'] = $user['role'];
            
           // ✅ Handle "Remember Me" feature
            if (isset($_POST["remember"])) {
@@ -43,8 +44,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
 
           LoginMailSend($email,$user['name']);
-          header("Location: user_dashboard.php");
-          exit();
+
+          // Check user role and redirect accordingly
+            if ($user['role'] === 'admin') {
+                header("Location: admin.php");
+            } else {
+                header("Location: user_dashboard.php");
+            }
+            exit();
+            
       } else {
           // Password is incorrect, redirect back to login with error message
           header("Location: login.php?error=Invalid email or password");

@@ -37,11 +37,18 @@ if ($format === 'pdf') {
     $css = "
         <style>
             body { font-family: Arial, sans-serif; }
-            h2 { text-align: center; color: #333; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #444; padding: 8px; text-align: center; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-            tr:nth-child(even) { background-color: #f9f9f9; }
+            h2 { text-align: center; color: #007BFF; background-color:#e0f7fa; padding:10px; border-radius:5px;}
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #007BFF; color: white; text-align: center;}
+            tr:nth-child(even) { background-color: #f2f2f2; }
+            tr:hover { background-color: #e0f7fa; }
+            td:nth-child(1), td:nth-child(6), td:nth-child(7) { text-align: center; } /* center complaint number, date, and status */
+            .status-pending { color: orange; }
+            .status-resolved { color: green; }
+            .status-rejected { color: red; }
+            .status-in-progress { color: blue; }
+
         </style>
     ";
 
@@ -58,6 +65,22 @@ if ($format === 'pdf') {
                 </tr>";
 
     foreach ($complaints as $complaint) {
+        $statusClass = '';
+        switch ($complaint['respond_status']) {
+            case 'Pending':
+                $statusClass = 'status-pending';
+                break;
+            case 'Resolved':
+                $statusClass = 'status-resolved';
+                break;
+            case 'Rejected':
+                $statusClass = 'status-rejected';
+                break;
+            case 'In Progress':
+                $statusClass = 'status-in-progress';
+                break;
+        }
+
         $html .= "<tr>
                     <td>{$complaint['complaint_number']}</td>
                     <td>{$complaint['complaint_title']}</td>
@@ -65,8 +88,8 @@ if ($format === 'pdf') {
                     <td>{$complaint['address']}</td>
                     <td>{$complaint['complaint_message']}</td>
                     <td>" . date("d M Y, h:i A", strtotime($complaint['complaint_date'])) . "</td>
-                    <td>{$complaint['respond_status']}</td>
-                  </tr>";
+                    <td class='{$statusClass}'>{$complaint['respond_status']}</td>
+                </tr>";
     }
     $html .= "</table>";
 
