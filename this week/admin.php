@@ -27,6 +27,32 @@ $resultAllCustomers = $conn->query($queryAllCustomers);
 // Retrieve all complaints details
 $queryAllComplaints = "SELECT id, user_id, complaint_number, complaint_title, mobile_number, address, complaint_message, complaint_date, respond_status FROM user_complaints";
 $resultAllComplaints = $conn->query($queryAllComplaints);
+
+
+//fetch login logs
+$queryLoginLogs = "SELECT login_logs.id, login_logs.login_time, login_logs.ip_address, login_logs.user_agent, customer_info.name, customer_info.email 
+                   FROM login_logs 
+                   JOIN customer_info ON login_logs.user_id = customer_info.user_id 
+                   ORDER BY login_logs.login_time DESC";
+$resultLoginLogs = $conn->query($queryLoginLogs);
+
+
+//fetch password reset logs
+$queryResetLogs = "SELECT password_reset_logs.id, password_reset_logs.reset_time, customer_info.name, customer_info.email 
+                   FROM password_reset_logs 
+                   JOIN customer_info ON password_reset_logs.user_id = customer_info.user_id 
+                   ORDER BY password_reset_logs.reset_time DESC";
+$resultResetLogs = $conn->query($queryResetLogs);
+
+//
+// Fetch audit logs
+$auditqueryLogs = "SELECT a.id, c.name, c.email, a.action_type, a.action_status, a.ip_address, a.user_agent, a.timestamp AS login_time, a.logout_time
+              FROM audit_logs a
+              LEFT JOIN customer_info c ON a.user_id = c.user_id
+              WHERE a.action_type = 'login'
+              ORDER BY a.timestamp DESC";
+$auditresultLogs = $conn->query($auditqueryLogs);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -69,7 +95,7 @@ $resultAllComplaints = $conn->query($queryAllComplaints);
     </div>
 
     <!-- Customers Table with Search (if needed) -->
-    <h2>Customers Details</h2>
+    <h2 class="mt-5">Customers Details</h2>
     <!-- Optionally add a search box here if desired -->
     <div class="scrollable-table">
         <table class="table table-bordered table-striped">
@@ -139,6 +165,91 @@ $resultAllComplaints = $conn->query($queryAllComplaints);
             </tbody>
         </table>
     </div>
+
+    <h2 class="mt-5">Login Logs</h2>
+    <div class="scrollable-table">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Login Time</th>
+                    <th>IP Address</th>
+                    <th>User Agent</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php while($log = $resultLoginLogs->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo $log['id']; ?></td>
+                    <td><?php echo htmlspecialchars($log['name']); ?></td>
+                    <td><?php echo htmlspecialchars($log['email']); ?></td>
+                    <td><?php echo date("d M Y, h:i A", strtotime($log['login_time'])); ?></td>
+                    <td><?php echo htmlspecialchars($log['ip_address']); ?></td>
+                    <td><?php echo htmlspecialchars($log['user_agent']); ?></td>
+                </tr>
+            <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="mt-5">Password Reset Logs</h2>
+    <div class="scrollable-table">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Reset Time</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php while($log = $resultResetLogs->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo $log['id']; ?></td>
+                    <td><?php echo htmlspecialchars($log['name']); ?></td>
+                    <td><?php echo htmlspecialchars($log['email']); ?></td>
+                    <td><?php echo date("d M Y, h:i A", strtotime($log['reset_time'])); ?></td>
+                </tr>
+            <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>Audit Logs</h2>
+    <div class="scrollable-table">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Login Time</th>
+                    <th>Logout Time</th>
+                    <th>IP Address</th>
+                    <th>User Agent</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php while($log = $auditresultLogs->fetch_assoc()): ?>
+                <tr>
+                    <td><?php echo $log['id']; ?></td>
+                    <td><?php echo htmlspecialchars($log['name']); ?></td>
+                    <td><?php echo htmlspecialchars($log['email']); ?></td>
+                    <td><?php echo date("d M Y, h:i A", strtotime($log['login_time'])); ?></td>
+                    <td><?php echo $log['logout_time'] ? date("d M Y, h:i A", strtotime($log['logout_time'])) : 'Still Logged In'; ?></td>
+                    <td><?php echo htmlspecialchars($log['ip_address']); ?></td>
+                    <td><?php echo htmlspecialchars($log['user_agent']); ?></td>
+                    <td><?php echo htmlspecialchars($log['action_status']); ?></td>
+                </tr>
+            <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
+
 </div>
 </body>
 </html>

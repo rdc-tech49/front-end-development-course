@@ -48,6 +48,20 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
 
         $reset_status = "Password reset successfully. Login to continue.";
         header("Location: login.php?reset_status= $reset_status");
+
+        // Insert reset log
+        $logQuery = "INSERT INTO password_reset_logs (user_id) VALUES (?)";
+        $logStmt = $conn->prepare($logQuery);
+        $logStmt->bind_param("i", $user['user_id']);
+        $logStmt->execute();
+
+        //
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $prstmt = $conn->prepare("INSERT INTO audit_logs (user_id, action_type, action_status, ip_address, user_agent) VALUES (?, 'password_reset', 'success', ?, ?)");
+        $prstmt->bind_param("iss", $user['user_id'], $ip_address, $user_agent);
+        $prstmt->execute();
+
         exit();
     } else {
         $_SESSION['message'] = "Failed to reset password. Please try again.";

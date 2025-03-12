@@ -8,11 +8,6 @@ include 'functions.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
-    // $rememberMe = isset($_POST['remember']); // Check if checkbox is checked
-    
-    // // Validate input (prevent SQL Injection)
-    // $email = $conn->real_escape_string($email);
-    // $password = $conn->real_escape_string($password);
 
     // Create a prepared statement to prevent SQL injection
     $stmt = $conn->prepare("SELECT * FROM customer_info WHERE email = ?");
@@ -31,6 +26,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           $_SESSION['user_name'] = $user['name'];
           $_SESSION['email'] = $user['email'];
           $_SESSION['role'] = $user['role'];
+
+
+          //login logs query 
+          // Capture IP & User Agent
+          $ip_address = $_SERVER['REMOTE_ADDR'];
+          $user_agent = $_SERVER['HTTP_USER_AGENT'];
+          // Insert login log
+          $logQuery = "INSERT INTO login_logs (user_id, ip_address, user_agent) VALUES (?, ?, ?)";
+          $logStmt = $conn->prepare($logQuery);
+          $logStmt->bind_param("iss", $user['user_id'], $ip_address, $user_agent);
+          $logStmt->execute();
+
+
+          //audit logs query
+          $ip_address = $_SERVER['REMOTE_ADDR'];
+          $user_agent = $_SERVER['HTTP_USER_AGENT'];
+          
+          $auditstmt = $conn->prepare("INSERT INTO audit_logs (user_id, action_type, action_status, ip_address, user_agent,timestamp) VALUES (?, 'login', 'success', ?, ?,NOW())");
+          $auditstmt->bind_param("iss", $user['user_id'], $ip_address, $user_agent);
+          $auditstmt->execute();
+
            
           // ✅ Handle "Remember Me" feature
            if (isset($_POST["remember"])) {
@@ -43,7 +59,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->execute();
             }
 
-          LoginMailSend($email,$user['name']);
+            // uncomment the below line for real world projects 
+            //send mail to denote login to user
+          //LoginMailSend($email,$user['name']);
 
           // Check user role and redirect accordingly
             if ($user['role'] === 'admin') {
@@ -56,6 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       } else {
           // Password is incorrect, redirect back to login with error message
           header("Location: login.php?error=Invalid email or password");
+           // Failed login attempt
+          $stmt = $conn->prepare("INSERT INTO audit_logs (action_type, action_status, ip_address, user_agent, timestamp) VALUES ('login', 'failure', ?, ?, NOW())");
+          $stmt->bind_param("ss", $ip_address, $user_agent);
+          $stmt->execute();
+
           exit();
       }
     } else {
