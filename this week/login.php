@@ -64,9 +64,19 @@ if (isset($_COOKIE["remember_me"])) {
 								echo '</div>';
 							}
 							?>
+							<!-- alert for reset password  -->
+							<?php 
+								if (isset($_GET["reset_status"])) {  // Check if 'signup_status' exists in the URL
+									$response_msg = htmlspecialchars($_GET["reset_status"], ENT_QUOTES, 'UTF-8');
+									echo '<div id="successMessage" class="alert alert-success text-center">';
+									echo $response_msg;
+									echo '</div>';
+								}
+							?>
 							
 							<h1 class="fs-4 card-title fw-bold mb-4 text-center">LOGIN</h1>
-							<form method="POST" class="needs-validation" novalidate="" autocomplete="off" action="login_process.php">
+							<form method="POST" class="needs-validation" novalidate="" autocomplete="" action="login_process.php">
+								<!-- //for real projects make autocomplete "off" -->
 								<div class="mb-3">
 									<label class="mb-2 text-muted" for="email">E-Mail Address</label>
 									<input id="email" type="email" class="form-control" name="email" value="" required autofocus>
@@ -78,7 +88,7 @@ if (isset($_COOKIE["remember_me"])) {
 								<div class="mb-3">
 									<div class="mb-2 w-100">
 										<label class="text-muted" for="password">Password</label>
-										<a href="forgot.html" class="float-end">
+										<a href="forgot.php" class="float-end">
 											Forgot Password?
 										</a>
 									</div>

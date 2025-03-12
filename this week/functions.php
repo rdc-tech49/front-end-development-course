@@ -30,7 +30,19 @@ function LoginMailSend($to_address,$username){
     $mail->Body    = "Hi  <b>$username</b>, You have logged in to RDC Tech website from <b>$to_address</b>. If not  kindly contact admin. Thank you"; 
     // Send email
     $mail->send();
+}
 
+function ResetMailSend($to_address,$username,$reset_link){
+    global $mail;
+
+    echo "$to_address";
+    echo "$username";
+    $mail->addAddress($to_address, $username);
+    $mail->isHTML(true);                        // Set email format to HTML
+    $mail->Subject = "Password Reset Request";
+    $mail->Body    = "Hello $username,\n\nWe received a request to reset your password. Please click the link below to reset your password:\n\n$reset_link\n\nIf you did not request a password reset, please ignore this email.\n\nRegards,\nRDC-Tech Team";
+    // Send email
+    $mail->send();
 }
 
 ?>
