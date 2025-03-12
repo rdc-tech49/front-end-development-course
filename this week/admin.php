@@ -68,10 +68,11 @@ $auditresultLogs = $conn->query($auditqueryLogs);
             overflow-y: auto;
         }
     </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 <?php include "header.php"; ?>
-<div class="container mt-5 pt-5">
+<div class="container mt-5 pt-5 mb-5 pb-5">
     <h1 class="mt-5">Admin Dashboard</h1>
 
     <!-- Statistics Cards -->
@@ -126,7 +127,7 @@ $auditresultLogs = $conn->query($auditqueryLogs);
     </div>
 
     <!-- Complaints Table with Search (if needed) -->
-    <h2>Complaints Details</h2>
+    <h2 class="mt-5">Complaints Details</h2>
     <!-- Optionally add a search box here if desired -->
     <div class="scrollable-table">
         <table class="table table-bordered table-striped">
@@ -218,7 +219,7 @@ $auditresultLogs = $conn->query($auditqueryLogs);
         </table>
     </div>
 
-    <h2>Audit Logs</h2>
+    <h2 class="mt-5">Audit Logs</h2>
     <div class="scrollable-table">
         <table class="table table-bordered table-striped">
             <thead class="table-dark">

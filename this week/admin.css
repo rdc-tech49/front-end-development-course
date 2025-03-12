@@ -1,0 +1,19 @@
+.scrollable-table {
+    max-height: 400px; /* Adjust height as needed */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    position: relative;
+}
+
+.scrollable-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.scrollable-table thead {
+    position: sticky;
+    top: 0;
+    background-color: #343a40; /* Dark background for contrast */
+    color: white;
+    z-index: 1000;
+}
