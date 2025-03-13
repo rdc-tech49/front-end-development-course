@@ -8,6 +8,12 @@ include 'functions.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
+// Get user's location
+$latitude = isset($_POST['latitude']) ? $_POST['latitude'] : null;
+$longitude = isset($_POST['longitude']) ? $_POST['longitude'] : null;
+
+
+
 
     // Create a prepared statement to prevent SQL injection
     $stmt = $conn->prepare("SELECT * FROM customer_info WHERE email = ?");
@@ -43,8 +49,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           $ip_address = $_SERVER['REMOTE_ADDR'];
           $user_agent = $_SERVER['HTTP_USER_AGENT'];
           
-          $auditstmt = $conn->prepare("INSERT INTO audit_logs (user_id, action_type, action_status, ip_address, user_agent,timestamp) VALUES (?, 'login', 'success', ?, ?,NOW())");
-          $auditstmt->bind_param("iss", $user['user_id'], $ip_address, $user_agent);
+          $auditstmt = $conn->prepare("INSERT INTO audit_logs (user_id, action_type, action_status, ip_address, user_agent,latitude, longitude, timestamp) VALUES (?, 'login', 'success', ?, ?, ?, ?, NOW())");
+          $auditstmt->bind_param("issss", $user['user_id'], $ip_address, $user_agent,$latitude, $longitude);
           $auditstmt->execute();
 
            
@@ -72,12 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit();
             
       } else {
+         // Failed login attempt
+         $stmt = $conn->prepare("INSERT INTO audit_logs (action_type, action_status, ip_address, user_agent, timestamp) VALUES ('login', 'failure', ?, ?, NOW())");
+         $stmt->bind_param("ss", $ip_address, $user_agent);
+         $stmt->execute();
           // Password is incorrect, redirect back to login with error message
           header("Location: login.php?error=Invalid email or password");
-           // Failed login attempt
-          $stmt = $conn->prepare("INSERT INTO audit_logs (action_type, action_status, ip_address, user_agent, timestamp) VALUES ('login', 'failure', ?, ?, NOW())");
-          $stmt->bind_param("ss", $ip_address, $user_agent);
-          $stmt->execute();
+          
 
           exit();
       }

@@ -46,7 +46,7 @@ $resultResetLogs = $conn->query($queryResetLogs);
 
 //
 // Fetch audit logs
-$auditqueryLogs = "SELECT a.id, c.name, c.email, a.action_type, a.action_status, a.ip_address, a.user_agent, a.timestamp AS login_time, a.logout_time
+$auditqueryLogs = "SELECT a.id, c.name, c.email, a.action_type, a.action_status, a.ip_address, a.user_agent, a.latitude, a.longitude, a.timestamp AS login_time, a.logout_time
               FROM audit_logs a
               LEFT JOIN customer_info c ON a.user_id = c.user_id
               WHERE a.action_type = 'login'
@@ -69,6 +69,8 @@ $auditresultLogs = $conn->query($auditqueryLogs);
         }
     </style>
     <link rel="stylesheet" href="admin.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAm67Ydt--cSwJYRJRLynO7PEqzmge7y6A&callback=initMap" async defer></script>
+
 </head>
 <body>
 <?php include "header.php"; ?>
@@ -220,37 +222,106 @@ $auditresultLogs = $conn->query($auditqueryLogs);
     </div>
 
     <h2 class="mt-5">Audit Logs</h2>
-    <div class="scrollable-table">
-        <table class="table table-bordered table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Login Time</th>
-                    <th>Logout Time</th>
-                    <th>IP Address</th>
-                    <th>User Agent</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php while($log = $auditresultLogs->fetch_assoc()): ?>
-                <tr>
-                    <td><?php echo $log['id']; ?></td>
-                    <td><?php echo htmlspecialchars($log['name']); ?></td>
-                    <td><?php echo htmlspecialchars($log['email']); ?></td>
-                    <td><?php echo date("d M Y, h:i A", strtotime($log['login_time'])); ?></td>
-                    <td><?php echo $log['logout_time'] ? date("d M Y, h:i A", strtotime($log['logout_time'])) : 'Still Logged In'; ?></td>
-                    <td><?php echo htmlspecialchars($log['ip_address']); ?></td>
-                    <td><?php echo htmlspecialchars($log['user_agent']); ?></td>
-                    <td><?php echo htmlspecialchars($log['action_status']); ?></td>
-                </tr>
-            <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
+<div class="scrollable-table">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Login Time</th>
+                <th>Logout Time</th>
+                <th>IP Address</th>
+                <th>User Agent</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php while($log = $auditresultLogs->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo $log['id']; ?></td>
+                <td><?php echo htmlspecialchars($log['name']); ?></td>
+                <td><?php echo htmlspecialchars($log['email']); ?></td>
+                <td><?php echo date("d M Y, h:i A", strtotime($log['login_time'])); ?></td>
+                <td><?php echo $log['logout_time'] ? date("d M Y, h:i A", strtotime($log['logout_time'])) : 'Still Logged In'; ?></td>
+                <td><?php echo htmlspecialchars($log['ip_address']); ?></td>
+                <td><?php echo htmlspecialchars($log['user_agent']); ?></td>
+                <td><?php echo htmlspecialchars($log['latitude']); ?></td>
+                <td><?php echo htmlspecialchars($log['longitude']); ?></td>
+                <td>
+    <a href="https://www.google.com/maps?q=<?php echo $log['latitude']; ?>,<?php echo $log['longitude']; ?>" target="_blank">
+        <?php echo $log['latitude'] . ', ' . $log['longitude']; ?>
+    </a>
+</td>
+                <td><?php echo htmlspecialchars($log['action_status']); ?></td>
+            </tr>
+        <?php endwhile; ?>
+        </tbody>
+    </table>
+</div>
+
+
+<?php
+include 'database_config.php';
+
+$today = date('Y-m-d');
+
+$query = "SELECT latitude, longitude, user_id, ip_address, timestamp FROM audit_logs WHERE DATE(timestamp) = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $today);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$locations = [];
+while ($row = $result->fetch_assoc()) {
+    if (!empty($row['latitude']) && !empty($row['longitude'])) {
+        $locations[] = [
+            'lat' => (float)$row['latitude'],
+            'lng' => (float)$row['longitude'],
+            'name' => $row['user_id'],
+            'ip' => $row['ip_address'],
+            'login_time' => date("d M Y, h:i A", strtotime($row['timestamp']))
+        ];
+    }
+}
+?>
+<h2 class="mt-5">Login Locations for Today</h2>
+<div id="map" style="width: 80%; height: 500px;"></div>
 
 </div>
+<script>
+    function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 3, // Adjust the zoom level as needed
+            center: { lat: 20.5937, lng: 78.9629 } // Default to center of the world (India as example)
+        });
+
+        var locations = <?php echo json_encode($locations); ?>;
+        if (locations.length === 0) {
+            console.log("No login locations available for today.");
+            return;
+        }
+        locations.forEach(function (location) {
+            var marker = new google.maps.Marker({
+                position: { lat: location.lat, lng: location.lng },
+                map: map
+            });
+
+            var infoWindow = new google.maps.InfoWindow({
+                content: `<strong>${location.name}</strong><br>IP: ${location.ip}<br>Login: ${location.login_time}`
+            });
+
+            marker.addListener('click', function () {
+                infoWindow.open(map, marker);
+            });
+        });
+        // Auto-center map to fit all markers
+        var bounds = new google.maps.LatLngBounds();
+        locations.forEach(loc => bounds.extend(new google.maps.LatLng(loc.lat, loc.lng)));
+        map.fitBounds(bounds);
+    }
+</script>
 </body>
 </html>

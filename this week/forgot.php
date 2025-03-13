@@ -12,6 +12,7 @@ session_start();
 	<title>Forgot Password Page - RDC-Tech</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+	<link rel="stylesheet" href="./css/index.css">
 </head>
 
 <body>
@@ -28,6 +29,7 @@ session_start();
             unset($_SESSION['message']);
         }
         ?>
+		
 							<form method="POST" class="needs-validation" novalidate="" autocomplete="off" action="forgot_process.php">
 								<div class="mb-3">
 									<label class="mb-2 text-muted" for="email">E-Mail Address</label>

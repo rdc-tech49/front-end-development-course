@@ -38,6 +38,7 @@ if (isset($_COOKIE["remember_me"])) {
 </head>
 
 <body>
+<div class="loader"></div>
 	<section class="vh-100">
 		<div class="container h-100">
 			<div class="row justify-content-sm-center h-100">
@@ -97,6 +98,10 @@ if (isset($_COOKIE["remember_me"])) {
 								    	Password is required
 							    	</div>
 								</div>
+								<!-- Hidden fields for latitude and longitude -->
+    <input type="hidden" id="latitude" name="latitude">
+    <input type="hidden" id="longitude" name="longitude">
+
 
 								<div class="d-flex align-items-center">
 									<div class="form-check">
@@ -137,5 +142,22 @@ if (isset($_COOKIE["remember_me"])) {
 			setTimeout(() => messageDiv.remove(), 500);
     }}, 5000);
     </script>
+	
+
+
+	<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            document.getElementById("latitude").value = position.coords.latitude;
+            document.getElementById("longitude").value = position.coords.longitude;
+        }, function (error) {
+            console.error("Error getting location: ", error);
+        });
+    } else {
+        console.error("Geolocation is not supported by this browser.");
+    }
+});
+</script>
 </body>
 </html>
