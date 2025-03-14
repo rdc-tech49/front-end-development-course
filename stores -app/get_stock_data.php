@@ -1,50 +1,69 @@
 <?php
-include 'database_config.php';
+include 'database_config.php'; // Ensure this includes the correct database connection
 
-// Fetch consolidated stock data
-$query = "SELECT sr.item_name, sr.item_quantity AS quantity_received, 
-                 COALESCE(isup.quantity, 0) AS quantity_supplied, 
-                 (sr.item_quantity - COALESCE(isup.quantity, 0)) AS quantity_in_stock
-          FROM stock_received sr
-          LEFT JOIN (
-              SELECT item_name, SUM(quantity) AS quantity 
-              FROM item_supplied 
-              GROUP BY item_name
-          ) isup ON sr.item_name = isup.item_name";
+header('Content-Type: application/json');
+
+// ✅ First Query: Total Stock Report (for Bar & Pie Chart)
+$query = "
+    SELECT sr.item_name, 
+       SUM(sr.item_quantity) AS quantity_received, 
+       COALESCE((SELECT SUM(isup.quantity) FROM item_supplied isup WHERE isup.item_name = sr.item_name), 0) AS quantity_supplied,
+       COALESCE((SELECT SUM(its.quantity) FROM items_to_be_supplied its WHERE its.item_name = sr.item_name), 0) AS items_to_be_supplied
+    FROM stock_received sr
+    GROUP BY sr.item_name;
+";
+
 $result = $conn->query($query);
 
-$item_names = [];
-$quantity_received = [];
-$quantity_supplied = [];
-$quantity_in_stock = [];
+$stock_data = [
+    "item_names" => [],
+    "quantity_received" => [],
+    "quantity_supplied" => [],
+    "items_to_be_supplied" => []
+];
 
 while ($row = $result->fetch_assoc()) {
-    $item_names[] = $row['item_name'];
-    $quantity_received[] = $row['quantity_received'];
-    $quantity_supplied[] = $row['quantity_supplied'];
-    $quantity_in_stock[] = $row['quantity_in_stock'];
+    $stock_data["item_names"][] = $row["item_name"];
+    $stock_data["quantity_received"][] = (int) $row["quantity_received"];
+    $stock_data["quantity_supplied"][] = (int) $row["quantity_supplied"];
+    $stock_data["items_to_be_supplied"][] = (int) $row["items_to_be_supplied"];
 }
 
-// Fetch supply trends
-$query = "SELECT supplied_date, COUNT(*) AS supply_count FROM item_supplied GROUP BY supplied_date ORDER BY supplied_date";
-$result = $conn->query($query);
+// ✅ Second Query: User-wise Item Supply Report (for Separate Bar Charts)
+$sql = "
+    SELECT 
+        s.item_name, 
+        u.name AS supplied_to, 
+        COALESCE(SUM(s.quantity), 0) AS quantity_supplied
+    FROM item_supplied s
+    JOIN users u ON s.supplied_to = u.name
+    GROUP BY s.item_name, u.name
+    ORDER BY s.item_name, u.name;
+";
 
-$supply_dates = [];
-$supply_counts = [];
+$result2 = $conn->query($sql);
 
-while ($row = $result->fetch_assoc()) {
-    $supply_dates[] = $row['supplied_date'];
-    $supply_counts[] = $row['supply_count'];
+$user_supply_data = [];
+
+while ($row = $result2->fetch_assoc()) {
+    $item_name = $row['item_name'];
+
+    if (!isset($user_supply_data[$item_name])) {
+        $user_supply_data[$item_name] = [
+            'users' => [],
+            'quantities' => []
+        ];
+    }
+
+    $user_supply_data[$item_name]['users'][] = $row['supplied_to']; 
+    $user_supply_data[$item_name]['quantities'][] = (int) $row['quantity_supplied'];
 }
 
-// Return JSON response
+// ✅ Ensure only ONE JSON response
 echo json_encode([
-    "item_names" => $item_names,
-    "quantity_received" => $quantity_received,
-    "quantity_supplied" => $quantity_supplied,
-    "quantity_in_stock" => $quantity_in_stock,
-    "supply_dates" => $supply_dates,
-    "supply_counts" => $supply_counts
+    "status" => "success",
+    "stock_data" => $stock_data, 
+    "user_supply_data" => $user_supply_data
 ]);
 
 $conn->close();

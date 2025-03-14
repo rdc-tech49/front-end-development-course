@@ -158,7 +158,8 @@ $resultUsers = $conn->query($queryUsers);
         <div class="tab-pane fade" id="create-supply-order" role="tabpanel">
           <h4>Create Supply Order</h4>
           <form id="supplyOrderForm" action="process_supply_order.php" method="POST" class="p-4 border shadow">
-            <div class="mb-3">
+            
+          <div class="mb-3">
               <label for="item_name" class="form-label">Select Item</label>
               <select id="item_name" class="form-select" name="item_name" required>
                 <option value="">Select Item</option>
@@ -177,7 +178,9 @@ $resultUsers = $conn->query($queryUsers);
 
             <div class="mb-3">
               <label for="quantity" class="form-label">Quantity <span id="available_quantity" class="text-danger"></span></label>
-              <input type="number" id="quantity" name="quantity" class="form-control" required min="1">
+              <select id="quantitySelect" name="quantity" class="form-select" required>
+                <option value="">Select Quantity</option>
+              </select>
             </div>
                 
             
@@ -218,52 +221,67 @@ $resultUsers = $conn->query($queryUsers);
               $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
           });
       });
-
-      
-
-
-
-      // Fetch Models & Quantity on Item Selection
-    $(document).ready(function () {
-        $("#item_name").change(function () {
-            let itemName = $(this).val();
-            if (itemName) {
-                $.ajax({
-                    url: "get_item_details.php",
-                    type: "GET",
-                    data: { item_name: itemName },
-                    success: function (response) {
-                        let data = JSON.parse(response);
-
-                        // Update item model dropdown
-                        $("#item_model").html('<option value="">-- Select Model --</option>');
-                        data.models.forEach(model => {
-                            $("#item_model").append('<option value="' + model + '">' + model + '</option>');
-                        });
-
-                        
-
-                        // Update available quantity display
-                        let availableQuantity = data.available_quantity || 0;
-                        $("#available_quantity").text("(Available: " + availableQuantity + ")");
-                        $("#quantity").attr("max", availableQuantity);
-                         // Update purchased date dropdown
-                    $("#purchased_date").html('<option value="">-- Select Purchased Date --</option>');
-                    data.purchased_dates.forEach(date => {
-                        $("#purchased_date").append('<option value="' + date + '">' + date + '</option>');
-                    });
-                    }
-                });
-            } else {
-                $("#item_model").html('<option value="">-- Select Model --</option>');
-                $("#available_quantity").text("");
-                $("#quantity").attr("max", "");
-                $("#purchased_date").html('<option value="">-- Select Purchased Date --</option>');
-
-            }
-        });
-    });
     </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const itemSelect = document.getElementById("item_name");
+    const modelSelect = document.getElementById("item_model");
+    const quantitySelect = document.getElementById("quantitySelect");
+    const availableQuantity = document.getElementById("available_quantity");
+
+    // ✅ Fetch Models based on Selected Item
+    itemSelect.addEventListener("change", function () {
+        const selectedItem = itemSelect.value;
+        modelSelect.innerHTML = '<option value="">Select Model</option>'; // Reset models
+        quantitySelect.innerHTML = '<option value="">Select Quantity</option>'; // Reset quantity
+        availableQuantity.textContent = ""; // Reset available quantity
+
+        if (selectedItem) {
+            fetch(`get_item_details.php?item_name=${selectedItem}&type=models`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.models.length > 0) {
+                        data.models.forEach(model => {
+                            const option = document.createElement("option");
+                            option.value = model;
+                            option.textContent = model;
+                            modelSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => console.error("Error fetching models:", error));
+        }
+    });
+
+    // ✅ Fetch Quantity based on Selected Item & Model
+    modelSelect.addEventListener("change", function () {
+        const selectedItem = itemSelect.value;
+        const selectedModel = modelSelect.value;
+        quantitySelect.innerHTML = '<option value="">Select Quantity</option>'; // Reset quantity
+        availableQuantity.textContent = ""; // Reset available quantity
+
+        if (selectedItem && selectedModel) {
+            fetch(`get_item_details.php?item_name=${selectedItem}&item_model=${selectedModel}&type=quantity`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.quantity > 0) {
+                        availableQuantity.textContent = `Available: ${data.quantity}`;
+                        data.quantityOptions.forEach(qty => {
+                            const option = document.createElement("option");
+                            option.value = qty;
+                            option.textContent = qty;
+                            quantitySelect.appendChild(option);
+                        });
+                    } else {
+                        availableQuantity.textContent = "Out of stock";
+                    }
+                })
+                .catch(error => console.error("Error fetching quantity:", error));
+        }
+    });
+});
+</script>
+
     <script>
       //to export as csv
       function exportTableToCSV() {

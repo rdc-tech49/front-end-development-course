@@ -1,0 +1,31 @@
+Array
+(
+    [item_names] => Array
+        (
+            [0] => Computer
+            [1] => Mobile
+            [2] => Tablet
+        )
+
+    [quantity_received] => Array
+        (
+            [0] => 10
+            [1] => 10
+            [2] => 22
+        )
+
+    [quantity_supplied] => Array
+        (
+            [0] => 5
+            [1] => 0
+            [2] => 8
+        )
+
+    [items_to_be_supplied] => Array
+        (
+            [0] => 5
+            [1] => 10
+            [2] => 14
+        )
+
+)
