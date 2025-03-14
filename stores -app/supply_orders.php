@@ -26,6 +26,13 @@ $resultUsers = $conn->query($queryUsers);
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Supply Orders</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- export to csv  -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery-table2csv@1.0.3/src/table2csv.min.js"></script>
+
+
+
 </head>
   <body>
     <?php include "sidebar.php"; ?>
@@ -70,8 +77,18 @@ $resultUsers = $conn->query($queryUsers);
         <!-- Stock Summary Tab -->
         <div class="tab-pane fade show active" id="stock-summary" role="tabpanel">
           <h4>Items to be Supplied</h4>
-          <div class="table-responsive" style="max-height: 400px; overflow-y: scroll;">
-            <table class="table table-bordered table-striped">
+
+          <!-- Search Box -->
+          <input type="text" id="searchnput" class="form-control mb-3" placeholder="Search items...">
+            
+          <!-- Export Buttons -->
+          <button onclick="exportTableToCSV()" class="btn btn-success">Export CSV</button>
+          <a href="export_supply_orders.php" class="btn btn-danger">Export as PDF</a>
+
+          
+          <!-- Scrollable Table -->
+          <div class="table-responsive mt-1" style="max-height: 400px; overflow-y: scroll;">
+            <table class="table table-bordered table-striped" id="itemsTable">
               <thead class="table-dark">
                 <tr>
                   <th>Item Name</th>
@@ -82,7 +99,9 @@ $resultUsers = $conn->query($queryUsers);
               </thead>
               <tbody>
                 <?php while ($row = $resultToBeSupplied->fetch_assoc()): ?>
-                <tr>
+                  <tr class="<?= ($row['quantity'] == 0) ? 'table-success' : (($row['quantity'] < 5) ? 'table-danger' : ''); ?>"
+    style="<?= ($row['quantity'] == 0) ? 'text-decoration: line-through; opacity: 0.6;' : ''; ?>">
+
                   <td><?php echo $row['item_name']; ?></td>
                   <td><?php echo $row['item_model']; ?></td>
                   <td><?php echo $row['quantity']; ?></td>
@@ -92,10 +111,22 @@ $resultUsers = $conn->query($queryUsers);
               </tbody>
             </table>
           </div>
+
+
+          <!-- Create Supply Order Tab -->
           
           <h4>Items Supplied</h4>
-          <div class="table-responsive" style="max-height: 400px; overflow-y: scroll;">
-            <table class="table table-bordered">
+          <!-- Search & Export Options -->
+          
+              <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search items...">
+              
+                  <button class="btn btn-success" onclick="exportTableToCSV()">Export CSV</button>
+                  <a href="export_supplied_pdf.php" class="btn btn-danger">Export PDF</a>
+              
+          
+
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-bordered table-striped mt-2" id="itemsSuppliedTable">
               <thead class="table-dark">
                 <tr>
                 <th>Item Name</th>
@@ -177,7 +208,22 @@ $resultUsers = $conn->query($queryUsers);
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
     <script>
+      // Search Functionality for first table
+      $("#searchnput").on("keyup", function() {
+          let value = $(this).val().toLowerCase();
+          $("#itemsTable tbody tr").filter(function() {
+              $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+          });
+      });
+
+      
+
+
+
+      // Fetch Models & Quantity on Item Selection
     $(document).ready(function () {
         $("#item_name").change(function () {
             let itemName = $(this).val();
@@ -217,6 +263,67 @@ $resultUsers = $conn->query($queryUsers);
             }
         });
     });
+    </script>
+    <script>
+      //to export as csv
+      function exportTableToCSV() {
+    let table = document.getElementById("itemsTable");
+    let rows = table.querySelectorAll("tr");
+    let csv = [];
+
+    for (let row of rows) {
+        let cols = row.querySelectorAll("th, td");
+        let rowData = [];
+        for (let col of cols) {
+            rowData.push(col.innerText);
+        }
+        csv.push(rowData.join(","));
+    }
+
+    let csvString = csv.join("\n");
+    let blob = new Blob([csvString], { type: "text/csv" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "items_to_be_supplied.csv";
+    link.click();
+    }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+ // Search Functionality for first table
+ $("#searchInput").on("keyup", function() {
+          let value = $(this).val().toLowerCase();
+          $("#itemsSuppliedTable tbody tr").filter(function() {
+              $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+          });
+      });
+
+
+
+
+    // Function to export table data as CSV
+    function exportTableToCSV() {
+        let csv = [];
+        let rows = document.querySelectorAll("#itemsSuppliedTable tr");
+
+        for (let row of rows) {
+            let cols = row.querySelectorAll("td, th");
+            let rowData = [];
+            for (let col of cols) {
+                rowData.push(col.innerText);
+            }
+            csv.push(rowData.join(","));
+        }
+
+        let csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "items_supplied.csv");
+        document.body.appendChild(link);
+        link.click();
+    }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
